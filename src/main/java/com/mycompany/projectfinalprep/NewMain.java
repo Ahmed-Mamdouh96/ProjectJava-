@@ -34,9 +34,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toMap;
 import org.apache.commons.math3.dfp.Dfp;
+import org.knowm.xchart.CategoryChart;
+import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.PieChart;
 import org.knowm.xchart.PieChartBuilder;
 import org.knowm.xchart.SwingWrapper;
+import org.knowm.xchart.style.Styler;
 import smile.plot.swing.Histogram;
 
 
@@ -50,56 +53,26 @@ public class NewMain {
         // TODO code application logic here
         
         Wazzaf_DAO Wazzaf = new Wazzaf_DAO();
+        
         DataFrame trainData = Wazzaf.readCSV ("D:\\ITI\\Java\\Project\\Wuzzuf_Jobs.csv");
         DataFrame d1 = DataFrame.of(trainData.stream().distinct());
-        System.out.println("d1");
+        
         
         List<Wazzaf_Data> titlesAndcompany = Wazzaf.readDatatoListFromCSV("D:\\ITI\\Java\\Project\\Wuzzuf_Jobs.csv");
         
-        List<Wazzaf_Data> newList = titlesAndcompany.stream()
-                                      .distinct()
-                                      .collect(Collectors.toList());
-        System.out.println(titlesAndcompany);
+        Map<String ,Long> CompanyandTitles = Wazzaf.MapOfCompanieswithNumberOfJobs(d1, titlesAndcompany);
         
-        int sizebefore = titlesAndcompany.size();
-        int sizeafter = newList.size();
-        System.out.println(sizebefore);
-        System.out.println(sizeafter);
-//         Create Array to hold company names 
-                 
-                 
-        String[] Companies = d1.stringVector ("Company").distinct ().toArray (new String[]{});
+        Map<String , Long> TitlesNumber = Wazzaf.MapOfMostTitles(d1, titlesAndcompany);
+     
+        Wazzaf.graphJobs(TitlesNumber);
+        Wazzaf.FirstGraph(CompanyandTitles);
         
-        
-        Map<String , List<Wazzaf_Data>> CompanyandTitles = new HashMap<>();
-        Map<String , Long> CompanyandTitlesNumber = new HashMap<>();
-        Map<String , Long> CompanyandTitlesNumberArranged = new HashMap<>();
-        
-        for (String company : Companies) 
-        {
-            
-            List <Wazzaf_Data> data = titlesAndcompany.stream().filter(c ->c.getCompany().equals(company)).collect(Collectors.toList());
-            Long data1 = titlesAndcompany.stream().filter(c ->c.getCompany().equals(company)).count();  
-            
-                    
-            CompanyandTitles.put(company, data);
-            CompanyandTitlesNumber.put(company,data1);
-        }
-        //System.out.println(CompanyandTitlesNumber);
-        CompanyandTitlesNumberArranged = CompanyandTitlesNumber 
-                .entrySet() 
-                .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect( toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new)); 
-          System.out.println("Most Demanding Companies: " + CompanyandTitlesNumberArranged);
-
-//        System.out.println(CompanyandTitlesNumber);    
+    }
     
-        Wazzaf.FirstGraph(CompanyandTitlesNumberArranged);
-
-//        Map<String, Long> result =passengerList.stream().filter(p -> p.getSurvived().equals("1")).collect (Collectors.groupingBy(TitanicPassengers::getSex, Collectors.counting() ) );
         
-           
+        
+        
+       
+        
 }       
   
-}
