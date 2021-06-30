@@ -57,7 +57,7 @@ public class Wazzaf_DAO {
         try {
             df = Read.csv (path, format);
             System.out.println(df.summary ());
-            df = df.select ("Title", "Company", "Location");
+            df = df.select ("Title", "Company", "Location","Type","Level","YearsExp","Country");
             df=df.omitNullRows();
            
             
@@ -77,7 +77,7 @@ public class Wazzaf_DAO {
 				record = br.readLine();
 				if(record != null) {
 					recordLst = record.split(",");
-					Wazzaf_Data p = new Wazzaf_Data((recordLst[0]),recordLst[1],recordLst[2].trim());
+					Wazzaf_Data p = new Wazzaf_Data((recordLst[0]),recordLst[1],recordLst[2],recordLst[3],recordLst[4],recordLst[5],recordLst[6].trim());
 					titlesAndcompany.add(p);
 				}			
 			}while(record != null);

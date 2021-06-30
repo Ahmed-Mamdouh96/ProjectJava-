@@ -14,11 +14,19 @@ public class Wazzaf_Data {
     private String title;
     private String company;
     private String location;
+    private String type;
+    private String level;
+    private String yearsexp;
+    private String country;
 
-    public Wazzaf_Data(String title, String company, String location) {
+    public Wazzaf_Data(String title, String company, String location, String type, String level, String yearsexp, String country) {
         this.title = title;
         this.company = company;
         this.location = location;
+        this.type = type;
+        this.level = level;
+        this.yearsexp = yearsexp;
+        this.country = country;
     }
 
     public String getTitle() {
@@ -44,14 +52,51 @@ public class Wazzaf_Data {
     public void setLocation(String location) {
         this.location = location;
     }
-    
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
+
+    public String getYearsexp() {
+        return yearsexp;
+    }
+
+    public void setYearsexp(String yearsexp) {
+        this.yearsexp = yearsexp;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+  
+
+   
     
     public String toString() {
         return "{" +
                 "title=" + title +
                 ", company=" + company +
                 ", location='" + location + '\'' +
-               
+                ", company=" + type +
+                 ", company=" + level +
+                 ", company=" + yearsexp +
+                 ", company=" + country +
                 '}'+"\n";
     }
 }
