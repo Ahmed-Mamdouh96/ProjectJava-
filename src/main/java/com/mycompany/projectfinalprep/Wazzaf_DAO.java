@@ -21,6 +21,7 @@ import smile.io.Read;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,12 +30,18 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toMap;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.PieChart;
 import org.knowm.xchart.PieChartBuilder;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.style.Styler;
+
 public class Wazzaf_DAO {
     
         List<Wazzaf_Data> titlesAndcompany;
@@ -43,7 +50,7 @@ public class Wazzaf_DAO {
         Map<String , Long> CompanyandTitlesNumber = new HashMap<>();
         
         Map<String , Long> TitlesNumber = new HashMap<>();
-
+        Map<String , Long> LocationNumber = new HashMap<>();
 
     public Wazzaf_DAO() {
         titlesAndcompany = new ArrayList<>();
@@ -57,7 +64,9 @@ public class Wazzaf_DAO {
         try {
             df = Read.csv (path, format);
             System.out.println(df.summary ());
-            df = df.select ("Title", "Company", "Location","Type","Level","YearsExp","Country");
+            df = df.select ("Title", "Company", "Location","Type","Level","YearsExp","Country","Skills");
+            
+            
             df=df.omitNullRows();
            
             
@@ -77,7 +86,7 @@ public class Wazzaf_DAO {
 				record = br.readLine();
 				if(record != null) {
 					recordLst = record.split(",");
-					Wazzaf_Data p = new Wazzaf_Data((recordLst[0]),recordLst[1],recordLst[2],recordLst[3],recordLst[4],recordLst[5],recordLst[6].trim());
+					Wazzaf_Data p = new Wazzaf_Data(recordLst[0],recordLst[1],recordLst[2].trim(),recordLst[3],recordLst[4],recordLst[5],recordLst[6],recordLst[7].trim());
 					titlesAndcompany.add(p);
 				}			
 			}while(record != null);
@@ -86,6 +95,7 @@ public class Wazzaf_DAO {
 		catch (IOException e) {
 			e.printStackTrace();
 		}
+                
 		return titlesAndcompany;
 	}
         
@@ -109,10 +119,12 @@ public class Wazzaf_DAO {
          public Map<String , Long> MapOfCompanieswithNumberOfJobs (DataFrame d , List<Wazzaf_Data> titlesAndcompany)
          {
              String[] Companies = d.stringVector ("Company").distinct ().toArray (new String[]{});
+             System.out.println(Companies.length);
               for (String company : Companies) 
         {
             
             Long data1 = titlesAndcompany.stream().filter(c ->c.getCompany().equals(company)).count();  
+            
             
                     
             CompanyandTitlesNumber.put(company,data1);
@@ -133,21 +145,39 @@ public class Wazzaf_DAO {
             String[] Titles = d.stringVector ("Title").distinct ().toArray (new String[]{});
             for (String title : Titles) 
         {
-            
             Long data2 = titlesAndcompany.stream().filter(c ->c.getTitle().equals(title)).count();  
             
                     TitlesNumber.put(title, data2);
         }
-                   Map<String , Long> TitlesNumberArranged = new HashMap<>();
-                   TitlesNumberArranged = TitlesNumber 
+                Map<String , Long> TitlesNumberArranged = new HashMap<>();
+                TitlesNumberArranged = TitlesNumber 
                 .entrySet() 
                 .stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
                 .collect( toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new)); 
-                 System.out.println("Most Demanding Job: " + TitlesNumberArranged);
-                    return TitlesNumberArranged;
+                System.out.println("Most Demanding Job: " + TitlesNumberArranged);
+                return TitlesNumberArranged;
         } 
         
+        
+        public Map<String , Long>  MapOfMostAreas (DataFrame d ,List<Wazzaf_Data> titlesAndcompany )   {
+            String[] locations = d.stringVector ("Location").distinct ().toArray (new String[]{});
+            for (String location : locations) 
+        {
+                
+            Long data3 = titlesAndcompany.stream().filter(c ->c.getLocation().equals(location)).count();  
+                   
+                    LocationNumber.put(location, data3);
+        }
+                Map<String , Long> LocationNumberArranged = new HashMap<>();
+                 LocationNumberArranged = LocationNumber 
+                .entrySet() 
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect( toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new)); 
+                System.out.println("Popular Areas : " + LocationNumberArranged);
+                return LocationNumberArranged;
+        } 
         
         
         
@@ -195,4 +225,70 @@ public class Wazzaf_DAO {
              
         new SwingWrapper(chart).displayChart();
 }
+        
+         public void graphAreas(Map<String , Long> Area) {
+        CategoryChart chart = new CategoryChartBuilder().width (1024).height (768).title ("Most Popular Area").xAxisTitle("Area").yAxisTitle("Count of Areas").build ();
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNW);
+        chart.getStyler().setHasAnnotations(true);
+        chart.getStyler().setStacked(true);
+       //chart.addSeries("Passenger's Ages", pNames, pAges);
+       
+
+         List<String> keyList = new ArrayList(Area.keySet());
+         List<Long> valueList = new ArrayList(Area.values());
+         
+         List<String> arrlist1 = keyList.subList(0, 10);
+         List<Long>   arrlist2 = valueList.subList(0, 10);
+
+         chart.addSeries("Most Areas", arrlist1, arrlist2);
+          
+
+             
+        new SwingWrapper(chart).displayChart();
+        
+        
 }
+       static  public List<Map.Entry> Skills (String filepath){
+                
+        Logger.getLogger ("org").setLevel (Level.ERROR);
+        // CREATE SPARK CONTEXT
+        SparkConf conf = new SparkConf ().setAppName ("wordCounts").setMaster ("local[3]");
+        JavaSparkContext sparkContext = new JavaSparkContext (conf);
+        // LOAD DATASETS
+        org.apache.spark.api.java.JavaRDD<String> videos = sparkContext.textFile (filepath);
+        org.apache.spark.api.java.JavaRDD<String> tags = videos
+                .map (Wazzaf_DAO::extractTag)
+                .filter (StringUtils::isNotBlank);
+       // JavaRDD<String>
+        org.apache.spark.api.java.JavaRDD<String> words = tags.flatMap (tag -> Arrays.asList (tag
+                .toLowerCase ()
+                .trim ()
+                .split ("\\,")).iterator ());
+        System.out.println(words.toString ());
+        // COUNTING
+        Map<String, Long> wordCounts = words.countByValue ();
+        List<Map.Entry> sorted = wordCounts.entrySet ().stream ()
+                .sorted (Map.Entry.comparingByValue ()).collect (Collectors.toList ());
+        
+        for (Map.Entry<String, Long> entry : sorted) {
+            System.out.println (entry.getKey () + " : " + entry.getValue ());
+        }
+            return sorted;
+    }
+       
+    public static String extractTag(String videoLine) {
+        try {
+            return (videoLine.split(",")[7]);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "";
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+}}

@@ -18,8 +18,9 @@ public class Wazzaf_Data {
     private String level;
     private String yearsexp;
     private String country;
+    private String skills;
 
-    public Wazzaf_Data(String title, String company, String location, String type, String level, String yearsexp, String country) {
+    public Wazzaf_Data(String title, String company, String location, String type, String level, String yearsexp, String country, String skills) {
         this.title = title;
         this.company = company;
         this.location = location;
@@ -27,6 +28,7 @@ public class Wazzaf_Data {
         this.level = level;
         this.yearsexp = yearsexp;
         this.country = country;
+        this.skills = skills;
     }
 
     public String getTitle() {
@@ -84,7 +86,16 @@ public class Wazzaf_Data {
     public void setCountry(String country) {
         this.country = country;
     }
-  
+
+    public String getSkills() {
+        return skills;
+    }
+
+    public void setSkills(String skills) {
+        this.skills = skills;
+    }
+
+    
 
    
     
@@ -92,11 +103,12 @@ public class Wazzaf_Data {
         return "{" +
                 "title=" + title +
                 ", company=" + company +
-                ", location='" + location + '\'' +
-                ", company=" + type +
-                 ", company=" + level +
-                 ", company=" + yearsexp +
-                 ", company=" + country +
+                ", location=" + location + 
+                ", type=" + type +
+                 ", level=" + level +
+                 ", yearsexp=" + yearsexp +
+                 ", country=" + country +
+                ", skills=" + skills +
                 '}'+"\n";
     }
 }
