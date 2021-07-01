@@ -245,8 +245,6 @@ public class Wazzaf_DAO {
 
              
         new SwingWrapper(chart).displayChart();
-        
-        
 }
        static  public List<Map.Entry> Skills (String filepath){
                 
@@ -275,7 +273,6 @@ public class Wazzaf_DAO {
         }
             return sorted;
     }
-       
     public static String extractTag(String videoLine) {
         try {
             return (videoLine.split(",")[7]);
