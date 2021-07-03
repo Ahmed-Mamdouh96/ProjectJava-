@@ -62,7 +62,7 @@ public class Wazzaf_DAO {
             df = Read.csv(path, format);
             System.out.println(df.summary());
             df = df.select("Title", "Company", "Location", "Type", "Level", "YearsExp", "Country", "Skills");
-
+            
             df = df.omitNullRows();
 
             System.out.println(df);
