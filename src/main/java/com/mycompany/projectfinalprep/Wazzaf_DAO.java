@@ -9,13 +9,11 @@ package com.mycompany.projectfinalprep;
  *
  * @author lenovo
  */
-
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import org.apache.commons.csv.CSVFormat;
 import smile.data.DataFrame;
-import smile.data.Tuple;
 import smile.io.Read;
 
 import java.io.IOException;
@@ -26,8 +24,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toMap;
 import org.apache.commons.lang3.StringUtils;
@@ -43,249 +42,219 @@ import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.style.Styler;
 
 public class Wazzaf_DAO {
-    
-        List<Wazzaf_Data> titlesAndcompany;
-        Map<String , List<Wazzaf_Data>> CompanyandTitles = new HashMap<>();
-        
-        Map<String , Long> CompanyandTitlesNumber = new HashMap<>();
-        
-        Map<String , Long> TitlesNumber = new HashMap<>();
-        Map<String , Long> LocationNumber = new HashMap<>();
+
+    List<Wazzaf_Data> titlesAndcompany;
+    Map<String, List<Wazzaf_Data>> CompanyandTitles = new HashMap<>();
+
+    Map<String, Long> CompanyandTitlesNumber = new HashMap<>();
+
+    Map<String, Long> TitlesNumber = new HashMap<>();
+    Map<String, Long> LocationNumber = new HashMap<>();
 
     public Wazzaf_DAO() {
         titlesAndcompany = new ArrayList<>();
     }
-        
-        
-        
-        public DataFrame readCSV(String path) {
-        CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader ();
+
+    public DataFrame readCSV(String path) {
+        CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader();
         DataFrame df = null;
         try {
-            df = Read.csv (path, format);
-            System.out.println(df.summary ());
-            df = df.select ("Title", "Company", "Location","Type","Level","YearsExp","Country","Skills");
-            
-            
-            df=df.omitNullRows();
-           
-            
+            df = Read.csv(path, format);
+            System.out.println(df.summary());
+            df = df.select("Title", "Company", "Location", "Type", "Level", "YearsExp", "Country", "Skills");
+
+            df = df.omitNullRows();
+
             System.out.println(df);
         } catch (IOException | URISyntaxException e) {
         }
         return df;
     }
-    
-        public  List<Wazzaf_Data> readDatatoListFromCSV(String fileName) {
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(fileName));
-			String record;
-			String[] recordLst;
-			
-			do {
-				record = br.readLine();
-				if(record != null) {
-					recordLst = record.split(",");
-					Wazzaf_Data p = new Wazzaf_Data(recordLst[0],recordLst[1],recordLst[2].trim(),recordLst[3],recordLst[4],recordLst[5],recordLst[6],recordLst[7].trim());
-					titlesAndcompany.add(p);
-				}			
-			}while(record != null);
-			br.close();
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-                
-		return titlesAndcompany;
-	}
-        
-        // Method to return Map of each company and jobs belong to it
-        
-        public Map<String , List<Wazzaf_Data>> MapOfCompanieswithJobs (DataFrame d , List<Wazzaf_Data> titlesAndcompany) {
-            String[] Companies = d.stringVector ("Company").distinct ().toArray (new String[]{});
-            for (String company : Companies) 
-        {
-            
-            List <Wazzaf_Data> data = titlesAndcompany.stream().filter(c ->c.getCompany().equals(company)).collect(Collectors.toList());            
-                    
-            CompanyandTitles.put(company, data);
-            
+
+    public List<Wazzaf_Data> readDatatoListFromCSV(String fileName) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(fileName));
+            String record;
+            String[] recordLst;
+
+            do {
+                record = br.readLine();
+                if (record != null) {
+                    recordLst = record.split(",");
+                    Wazzaf_Data p = new Wazzaf_Data(recordLst[0], recordLst[1], recordLst[2].trim(), recordLst[3], recordLst[4], recordLst[5], recordLst[6], recordLst[7].trim());
+                    titlesAndcompany.add(p);
+                }
+            } while (record != null);
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-            return CompanyandTitles;
-        }
-        
-        // Map to return the Company and number of jobs inside it 
-        
-         public Map<String , Long> MapOfCompanieswithNumberOfJobs (DataFrame d , List<Wazzaf_Data> titlesAndcompany)
-         {
-             String[] Companies = d.stringVector ("Company").distinct ().toArray (new String[]{});
-             System.out.println(Companies.length);
-              for (String company : Companies) 
-        {
-            
-            Long data1 = titlesAndcompany.stream().filter(c ->c.getCompany().equals(company)).count();  
-            
-            
-                    
-            CompanyandTitlesNumber.put(company,data1);
-        }
-              Map<String , Long> CompanyandTitlesNumberArranged = new HashMap<>();
-              CompanyandTitlesNumberArranged = CompanyandTitlesNumber 
-                .entrySet() 
-                .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect( toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new)); 
-                 System.out.println("Most Demanding Companies: " + CompanyandTitlesNumberArranged);
 
-              return CompanyandTitlesNumberArranged;
-         }
-        
-        
-        public Map<String , Long>  MapOfMostTitles (DataFrame d ,List<Wazzaf_Data> titlesAndcompany )   {
-            String[] Titles = d.stringVector ("Title").distinct ().toArray (new String[]{});
-            for (String title : Titles) 
-        {
-            Long data2 = titlesAndcompany.stream().filter(c ->c.getTitle().equals(title)).count();  
-            
-                    TitlesNumber.put(title, data2);
-        }
-                Map<String , Long> TitlesNumberArranged = new HashMap<>();
-                TitlesNumberArranged = TitlesNumber 
-                .entrySet() 
-                .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect( toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new)); 
-                System.out.println("Most Demanding Job: " + TitlesNumberArranged);
-                return TitlesNumberArranged;
-        } 
-        
-        
-        public Map<String , Long>  MapOfMostAreas (DataFrame d ,List<Wazzaf_Data> titlesAndcompany )   {
-            String[] locations = d.stringVector ("Location").distinct ().toArray (new String[]{});
-            for (String location : locations) 
-        {
-                
-            Long data3 = titlesAndcompany.stream().filter(c ->c.getLocation().equals(location)).count();  
-                   
-                    LocationNumber.put(location, data3);
-        }
-                Map<String , Long> LocationNumberArranged = new HashMap<>();
-                 LocationNumberArranged = LocationNumber 
-                .entrySet() 
-                .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect( toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new)); 
-                System.out.println("Popular Areas : " + LocationNumberArranged);
-                return LocationNumberArranged;
-        } 
-        
-        
-        
-        
-
-          public void FirstGraph(Map<String , Long> Company) {
-    
-            PieChart chart = new PieChartBuilder().width (800).height (600).title (getClass().getSimpleName()).build ();
-            Color[] sliceColors= new Color[]{new Color (180, 68, 50), new Color (130, 105, 120),new Color (80, 110, 45), new Color (80, 143, 160)};chart.getStyler().setSeriesColors(sliceColors);
-            chart.getStyler().setSeriesColors(sliceColors);
-            
-            List<String> keyList = new ArrayList(Company.keySet());
-            List<Long> valueList = new ArrayList(Company.values());
-             for (int i = 0; i < 4; i++) {
-
-            
-             chart.addSeries(keyList.get(i),valueList.get(i));
-
-            }
-            
-                
-           
-          
-            new SwingWrapper(chart).displayChart();
-}
-          
-          
-        public void graphJobs(Map<String , Long> TitlesNumber) {
-        CategoryChart chart = new CategoryChartBuilder().width (1024).height (768).title ("JobsDemand").xAxisTitle("Jobs").yAxisTitle("NumberOfJobs").build ();
-        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNW);
-        chart.getStyler().setHasAnnotations(true);
-        chart.getStyler().setStacked(true);
-       //chart.addSeries("Passenger's Ages", pNames, pAges);
-       
-
-         List<String> keyList = new ArrayList(TitlesNumber.keySet());
-         List<Long> valueList = new ArrayList(TitlesNumber.values());
-         
-         List<String> arrlist1 = keyList.subList(0, 10);
-         List<Long>   arrlist2 = valueList.subList(0, 10);
-
-         chart.addSeries("Most Job", arrlist1, arrlist2);
-          
-
-             
-        new SwingWrapper(chart).displayChart();
-}
-        
-         public void graphAreas(Map<String , Long> Area) {
-        CategoryChart chart = new CategoryChartBuilder().width (1024).height (768).title ("Most Popular Area").xAxisTitle("Area").yAxisTitle("Count of Areas").build ();
-        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNW);
-        chart.getStyler().setHasAnnotations(true);
-        chart.getStyler().setStacked(true);
-       //chart.addSeries("Passenger's Ages", pNames, pAges);
-       
-
-         List<String> keyList = new ArrayList(Area.keySet());
-         List<Long> valueList = new ArrayList(Area.values());
-         
-         List<String> arrlist1 = keyList.subList(0, 10);
-         List<Long>   arrlist2 = valueList.subList(0, 10);
-
-         chart.addSeries("Most Areas", arrlist1, arrlist2);
-          
-
-             
-        new SwingWrapper(chart).displayChart();
-}
-       static  public List<Map.Entry> Skills (String filepath){
-                
-        Logger.getLogger ("org").setLevel (Level.ERROR);
-        // CREATE SPARK CONTEXT
-        SparkConf conf = new SparkConf ().setAppName ("wordCounts").setMaster ("local[3]");
-        JavaSparkContext sparkContext = new JavaSparkContext (conf);
-        // LOAD DATASETS
-        org.apache.spark.api.java.JavaRDD<String> videos = sparkContext.textFile (filepath);
-        org.apache.spark.api.java.JavaRDD<String> tags = videos
-                .map (Wazzaf_DAO::extractTag)
-                .filter (StringUtils::isNotBlank);
-       // JavaRDD<String>
-        org.apache.spark.api.java.JavaRDD<String> words = tags.flatMap (tag -> Arrays.asList (tag
-                .toLowerCase ()
-                .trim ()
-                .split ("\\,")).iterator ());
-        System.out.println(words.toString ());
-        // COUNTING
-        Map<String, Long> wordCounts = words.countByValue ();
-        List<Map.Entry> sorted = wordCounts.entrySet ().stream ()
-                .sorted (Map.Entry.comparingByValue ()).collect (Collectors.toList ());
-        
-        for (Map.Entry<String, Long> entry : sorted) {
-            System.out.println (entry.getKey () + " : " + entry.getValue ());
-        }
-            return sorted;
+        return titlesAndcompany;
     }
+
+    // Method to return Map of each company and jobs belong to it
+    public Map<String, List<Wazzaf_Data>> MapOfCompanieswithJobs(DataFrame d, List<Wazzaf_Data> titlesAndcompany) {
+        String[] Companies = d.stringVector("Company").distinct().toArray(new String[]{});
+        for (String company : Companies) {
+
+            List<Wazzaf_Data> data = titlesAndcompany.stream().filter(c -> c.getCompany().equals(company)).collect(Collectors.toList());
+
+            CompanyandTitles.put(company, data);
+
+        }
+        return CompanyandTitles;
+    }
+
+    // Map to return the Company and number of jobs inside it 
+    public Map<String, Long> MapOfCompanieswithNumberOfJobs(DataFrame d, List<Wazzaf_Data> titlesAndcompany) {
+        String[] Companies = d.stringVector("Company").distinct().toArray(new String[]{});
+        System.out.println(Companies.length);
+        for (String company : Companies) {
+
+            Long data1 = titlesAndcompany.stream().filter(c -> c.getCompany().equals(company)).count();
+
+            CompanyandTitlesNumber.put(company, data1);
+        }
+        Map<String, Long> CompanyandTitlesNumberArranged = new HashMap<>();
+        CompanyandTitlesNumberArranged = CompanyandTitlesNumber
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+        System.out.println("Most Demanding Companies: " + CompanyandTitlesNumberArranged);
+
+        return CompanyandTitlesNumberArranged;
+    }
+
+    public Map<String, Long> MapOfMostTitles(DataFrame d, List<Wazzaf_Data> titlesAndcompany) {
+        String[] Titles = d.stringVector("Title").distinct().toArray(new String[]{});
+        for (String title : Titles) {
+            Long data2 = titlesAndcompany.stream().filter(c -> c.getTitle().equals(title)).count();
+
+            TitlesNumber.put(title, data2);
+        }
+        Map<String, Long> TitlesNumberArranged = new HashMap<>();
+        TitlesNumberArranged = TitlesNumber
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+        System.out.println("Most Demanding Job: " + TitlesNumberArranged);
+        return TitlesNumberArranged;
+    }
+
+    public Map<String, Long> MapOfMostAreas(DataFrame d, List<Wazzaf_Data> titlesAndcompany) {
+        String[] locations = d.stringVector("Location").distinct().toArray(new String[]{});
+        for (String location : locations) {
+
+            Long data3 = titlesAndcompany.stream().filter(c -> c.getLocation().equals(location)).count();
+
+            LocationNumber.put(location, data3);
+        }
+        Map<String, Long> LocationNumberArranged = new HashMap<>();
+        LocationNumberArranged = LocationNumber
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+        System.out.println("Popular Areas : " + LocationNumberArranged);
+        return LocationNumberArranged;
+    }
+
+    public void FirstGraph(Map<String, Long> Company) {
+
+        PieChart chart = new PieChartBuilder().width(800).height(600).title(getClass().getSimpleName()).build();
+        Color[] sliceColors = new Color[]{new Color(180, 68, 50), new Color(130, 105, 120), new Color(80, 110, 45), new Color(80, 143, 160)};
+        chart.getStyler().setSeriesColors(sliceColors);
+        chart.getStyler().setSeriesColors(sliceColors);
+
+        List<String> keyList = new ArrayList(Company.keySet());
+        List<Long> valueList = new ArrayList(Company.values());
+        for (int i = 0; i < 4; i++) {
+
+            chart.addSeries(keyList.get(i), valueList.get(i));
+
+        }
+
+        new SwingWrapper(chart).displayChart();
+    }
+
+    public void graphJobs(Map<String, Long> TitlesNumber) {
+        CategoryChart chart = new CategoryChartBuilder().width(1024).height(768).title("JobsDemand").xAxisTitle("Jobs").yAxisTitle("NumberOfJobs").build();
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNW);
+        chart.getStyler().setHasAnnotations(true);
+        chart.getStyler().setStacked(true);
+        //chart.addSeries("Passenger's Ages", pNames, pAges);
+
+        List<String> keyList = new ArrayList(TitlesNumber.keySet());
+        List<Long> valueList = new ArrayList(TitlesNumber.values());
+
+        List<String> arrlist1 = keyList.subList(0, 10);
+        List<Long> arrlist2 = valueList.subList(0, 10);
+
+        chart.addSeries("Most Job", arrlist1, arrlist2);
+
+        new SwingWrapper(chart).displayChart();
+    }
+
+    public void graphAreas(Map<String, Long> Area) {
+        CategoryChart chart = new CategoryChartBuilder().width(1024).height(768).title("Most Popular Area").xAxisTitle("Area").yAxisTitle("Count of Areas").build();
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.InsideNW);
+        chart.getStyler().setHasAnnotations(true);
+        chart.getStyler().setStacked(true);
+        //chart.addSeries("Passenger's Ages", pNames, pAges);
+
+        List<String> keyList = new ArrayList(Area.keySet());
+        List<Long> valueList = new ArrayList(Area.values());
+
+        List<String> arrlist1 = keyList.subList(0, 10);
+        List<Long> arrlist2 = valueList.subList(0, 10);
+
+        chart.addSeries("Most Areas", arrlist1, arrlist2);
+
+        new SwingWrapper(chart).displayChart();
+    }
+
+    static public List<Map.Entry> Skills(String filepath) {
+
+        Logger.getLogger("org").setLevel(Level.ERROR);
+        // CREATE SPARK CONTEXT
+        SparkConf conf = new SparkConf().setAppName("wordCounts").setMaster("local[3]");
+        JavaSparkContext sparkContext = new JavaSparkContext(conf);
+        // LOAD DATASETS
+        org.apache.spark.api.java.JavaRDD<String> videos = sparkContext.textFile(filepath);
+        org.apache.spark.api.java.JavaRDD<String> tags = videos
+                .map(Wazzaf_DAO::extractTag)
+                .filter(StringUtils::isNotBlank);
+        // JavaRDD<String>
+        org.apache.spark.api.java.JavaRDD<String> words = tags.flatMap(tag -> Arrays.asList(tag
+                .split(",")).iterator());
+        System.out.println(words.toString());
+        // COUNTING
+        Map<String, Long> wordCounts = words.countByValue();
+        List<Map.Entry> sorted = wordCounts.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue()).collect(Collectors.toList());
+
+        for (Map.Entry<String, Long> entry : sorted) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
+
+        }
+        return sorted;
+    }
+
     public static String extractTag(String videoLine) {
         try {
-            return (videoLine.split(",")[7]);
+            String[] splitline = videoLine.split(",");
+            splitline = Arrays.copyOfRange(splitline, 7, splitline.length);
+            videoLine = String.join(", ", splitline);
+            return (videoLine);
         } catch (ArrayIndexOutOfBoundsException e) {
             return "";
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-}}
+
+    }
+
+  
+    
+}
