@@ -229,7 +229,7 @@ public class Wazzaf_DAO {
                 .filter(StringUtils::isNotBlank);
         // JavaRDD<String>
         org.apache.spark.api.java.JavaRDD<String> words = tags.flatMap(tag -> Arrays.asList(tag
-                .split(",")).iterator());
+              .toLowerCase().trim().split(",")).iterator());
         System.out.println(words.toString());
         // COUNTING
         Map<String, Long> wordCounts = words.countByValue();
@@ -247,14 +247,20 @@ public class Wazzaf_DAO {
         try {
             String[] splitline = videoLine.split(",");
             splitline = Arrays.copyOfRange(splitline, 7, splitline.length);
-            videoLine = String.join(", ", splitline);
-            return (videoLine);
+            videoLine = String.join(",", splitline).trim();
+            String result = videoLine.replaceAll("^\"+|\"+$", "");
+            String resultfinal = result.replaceAll(" ","");
+            
+            //System.out.println(resultfinal);
+            return resultfinal;
+            
+            
         } catch (ArrayIndexOutOfBoundsException e) {
             return "";
         }
 
     }
 
-  
+ 
     
 }
