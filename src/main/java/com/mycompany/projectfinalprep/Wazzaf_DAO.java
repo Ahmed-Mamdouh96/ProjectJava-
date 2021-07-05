@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toMap;
 import org.apache.commons.lang3.StringUtils;
@@ -34,12 +33,15 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.knowm.xchart.BitmapEncoder;
+import org.knowm.xchart.BitmapEncoder.BitmapFormat;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.PieChart;
 import org.knowm.xchart.PieChartBuilder;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.style.Styler;
+import smile.data.measure.NominalScale;
 
 public class Wazzaf_DAO {
 
@@ -57,6 +59,7 @@ public class Wazzaf_DAO {
 
     public DataFrame readCSV(String path) {
         CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader();
+        //CSVFormat csvFileFormat = CSVFormat.DEFAULT.withQuote(null);
         DataFrame df = null;
         try {
             df = Read.csv(path, format);
@@ -129,6 +132,8 @@ public class Wazzaf_DAO {
 
     public Map<String, Long> MapOfMostTitles(DataFrame d, List<Wazzaf_Data> titlesAndcompany) {
         String[] Titles = d.stringVector("Title").distinct().toArray(new String[]{});
+        System.out.println("///////////////////////////////////////");
+        System.out.println(Titles.length);
         for (String title : Titles) {
             Long data2 = titlesAndcompany.stream().filter(c -> c.getTitle().equals(title)).count();
 
@@ -162,7 +167,7 @@ public class Wazzaf_DAO {
         return LocationNumberArranged;
     }
 
-    public void FirstGraph(Map<String, Long> Company) {
+    public void FirstGraph(Map<String, Long> Company) throws IOException {
 
         PieChart chart = new PieChartBuilder().width(800).height(600).title(getClass().getSimpleName()).build();
         Color[] sliceColors = new Color[]{new Color(180, 68, 50), new Color(130, 105, 120), new Color(80, 110, 45), new Color(80, 143, 160)};
@@ -178,6 +183,7 @@ public class Wazzaf_DAO {
         }
 
         new SwingWrapper(chart).displayChart();
+        BitmapEncoder.saveBitmap(chart, "./images/Companies", BitmapFormat.PNG);
     }
 
     public void graphJobs(Map<String, Long> TitlesNumber) {
@@ -260,7 +266,16 @@ public class Wazzaf_DAO {
         }
 
     }
+    
+    public static double[] encodeCategory(DataFrame df, String columnName1) {
+        String[] values = df.stringVector(columnName1).distinct ().toArray(new String[]{});
+        //String[] values1 = df.stringVector(columnName2).distinct ().toArray(new String[]{});
+    
+        double[] pclassValues1= df.stringVector(columnName1).factorize (new NominalScale(values)).toDoubleArray();
+        //int[] pclassValues2= df.stringVector(columnName2).factorize (new NominalScale(values1)).toIntArray();
 
- 
+        return pclassValues1;   
+    }
+   
     
 }
