@@ -14,5 +14,5 @@ Build all java needed classes (POJO , DAO, web service and a tester client for t
 8. Find out the most popular areas
 9. Show step 8 in bar chart 
 10. Print skills one by one and how many each repeated and order the output to find out the most important skills required?
-11. Factorize the YearsExp feature and convert it to numbers in new col. (Bounce )
-12. Apply K-means for job title and companies (Bounce )
+11. Factorize the YearsExp feature and convert it to numbers in new col. 
+12. Apply K-means for job title and companies 
